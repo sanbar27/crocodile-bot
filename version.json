@@ -1,5 +1,5 @@
 {
     "version": "5.5",
-    "changelog": "• Fixed theme saving bug\n• Added animated loading effects\n• Added progress bars\n• Added typing animation effect\n• Added pulsing status indicator\n• Added new Orange theme\n• Improved error messages",
-    "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/selfbot.py"
+    "changelog": "Initial release with auto-update",
+    "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/CrocodileSelfBot.exe"
 }
