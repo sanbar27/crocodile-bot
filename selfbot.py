@@ -16,8 +16,8 @@ from datetime import datetime
 
 # Version
 VERSION = "5.4"
-UPDATE_URL = "https://raw.githubusercontent.com/crocodile-bot/updates/main/selfbot.py"
-VERSION_URL = "https://raw.githubusercontent.com/crocodile-bot/updates/main/version.json"
+UPDATE_URL = "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/selfbot.py"
+VERSION_URL = "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/version.json"
 
 # ============================================================
 # THEMES
