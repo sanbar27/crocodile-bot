@@ -1,0 +1,5 @@
+{
+    "version": "5.4",
+    "changelog": "• Fixed SSL certificate issue\n• Added better error handling\n• Improved emoji conversion",
+    "url": "https://raw.githubusercontent.com/sanbar27/crocodile_bot/main/selfbot.py"
+}
