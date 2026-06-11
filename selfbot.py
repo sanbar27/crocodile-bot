@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-CROCODILE SELF-BOT v5.4
-- Finds config_multi.json in the SAME folder as the EXE
+CROCODILE SELF-BOT v5.5
+- Fixed theme saving bug
+- Animated terminal effects
 - Auto-update system
 """
 
@@ -12,15 +13,53 @@ import os
 import sys
 import re
 import shutil
+import threading
+import random
 from datetime import datetime
 
 # Version
-VERSION = "5.4"
+VERSION = "5.5"
 UPDATE_URL = "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/selfbot.py"
 VERSION_URL = "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/version.json"
 
 # ============================================================
-# THEMES
+# ANIMATION EFFECTS
+# ============================================================
+
+def loading_animation(text="Loading", duration=1.5):
+    """Show a loading animation"""
+    chars = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"]
+    end_time = time.time() + duration
+    i = 0
+    while time.time() < end_time:
+        sys.stdout.write(f"\r{C['secondary']}{chars[i % len(chars)]} {text}{C['reset']}")
+        sys.stdout.flush()
+        time.sleep(0.1)
+        i += 1
+    sys.stdout.write("\r" + " " * 50 + "\r")
+
+def typing_animation(text, delay=0.03):
+    """Simulate typing effect"""
+    for char in text:
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(delay)
+    print()
+
+def pulse_animation():
+    """Pulse effect for idle state"""
+    chars = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█", "▇", "▆", "▅", "▄", "▃", "▂", "▁"]
+    return chars[int(time.time() * 5) % len(chars)]
+
+def progress_bar(current, total, width=30):
+    """Create a progress bar"""
+    percent = current / total
+    filled = int(width * percent)
+    bar = "█" * filled + "░" * (width - filled)
+    return f"[{bar}] {int(percent * 100)}%"
+
+# ============================================================
+# THEMES (FIXED)
 # ============================================================
 THEMES = {
     "crocodile": {
@@ -54,6 +93,14 @@ THEMES = {
         "warning": '\033[93m',
         "error": '\033[91m',
         "reset": '\033[0m'
+    },
+    "orange": {
+        "primary": '\033[38;5;214m',
+        "secondary": '\033[38;5;208m',
+        "accent": '\033[93m',
+        "warning": '\033[93m',
+        "error": '\033[91m',
+        "reset": '\033[0m'
     }
 }
 
@@ -61,10 +108,8 @@ THEMES = {
 def get_base_path():
     """Get the base path where the EXE is located"""
     if getattr(sys, 'frozen', False):
-        # Running as compiled EXE
         return os.path.dirname(sys.executable)
     else:
-        # Running as script
         return os.path.dirname(os.path.abspath(__file__))
 
 BASE_PATH = get_base_path()
@@ -75,19 +120,31 @@ THEME_FILE = os.path.join(BASE_PATH, "theme.json")
 C = THEMES["crocodile"]
 
 def load_theme():
+    """Load saved theme - FIXED"""
     global C
-    if os.path.exists(THEME_FILE):
-        with open(THEME_FILE, 'r') as f:
-            theme_name = json.load(f).get('theme', 'crocodile')
-            if theme_name in THEMES:
-                C = THEMES[theme_name]
-                return theme_name
+    theme_file_path = THEME_FILE
+    if os.path.exists(theme_file_path):
+        try:
+            with open(theme_file_path, 'r') as f:
+                data = json.load(f)
+                theme_name = data.get('theme', 'crocodile')
+                if theme_name in THEMES:
+                    C = THEMES[theme_name]
+                    return theme_name
+        except:
+            pass
     C = THEMES["crocodile"]
     return "crocodile"
 
 def save_theme(theme_name):
-    with open(THEME_FILE, 'w') as f:
-        json.dump({"theme": theme_name}, f)
+    """Save theme - FIXED"""
+    try:
+        with open(THEME_FILE, 'w') as f:
+            json.dump({"theme": theme_name}, f)
+        return True
+    except Exception as e:
+        print(f"Error saving theme: {e}")
+        return False
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -114,18 +171,15 @@ def download_update(download_url):
         print(f"{C['warning']}📥 Downloading update...{C['reset']}")
         response = requests.get(download_url, timeout=10)
         if response.status_code == 200:
-            # Save to a temp file
             temp_file = os.path.join(BASE_PATH, "selfbot_update.py")
             with open(temp_file, 'w', encoding='utf-8') as f:
                 f.write(response.text)
             
-            # If running as EXE, save the new script for next time
             if getattr(sys, 'frozen', False):
                 print(f"{C['secondary']}   Update downloaded. Please replace your EXE manually.{C['reset']}")
                 print(f"{C['warning']}   (EXE files cannot self-update, download new version from source){C['reset']}")
                 return False
             else:
-                # Running as script, can replace itself
                 shutil.copy(temp_file, sys.argv[0])
                 os.remove(temp_file)
                 return True
@@ -153,6 +207,7 @@ def perform_update():
         choice = input(f"{C['primary']}Update now? (y/n): {C['reset']}").strip().lower()
         
         if choice == 'y':
+            loading_animation("Downloading update", 1.5)
             if download_update(download_url):
                 print(f"{C['primary']}✅ Update complete! Restarting...{C['reset']}")
                 time.sleep(2)
@@ -328,6 +383,7 @@ def add_channel(config):
         print(f"\n{C['warning']}⚠️ PURE EMOJI MODE: Regular text will be removed!{C['reset']}")
     
     print(f"\n{C['secondary']}🔍 Fetching custom emojis...{C['reset']}")
+    loading_animation("Scanning server", 1)
     emoji_map, guild_id = refresh_emoji_map_for_channel(config['token'], channel_id)
     
     if emoji_map:
@@ -483,7 +539,11 @@ def send_to_all_channels_once(config):
     success_count = 0
     fail_count = 0
     
-    for ch in enabled_channels:
+    for i, ch in enumerate(enabled_channels):
+        # Show progress
+        progress = progress_bar(i + 1, len(enabled_channels), 20)
+        print(f"  {progress} ", end="")
+        
         emoji_map = ch.get('emoji_map', {})
         if not emoji_map and ch.get('guild_id'):
             emoji_map, _ = refresh_emoji_map_for_channel(config['token'], ch['channel_id'])
@@ -493,20 +553,17 @@ def send_to_all_channels_once(config):
         raw_msg = ch.get('raw_message', '')
         pure_mode = ch.get('pure_emoji_mode', False)
         
-        mode_icon = "🔮" if pure_mode else "📝"
-        print(f"  {mode_icon} Sending to {ch['channel_id']}...", end=" ")
-        
         success, error = send_message(config['token'], ch['channel_id'], raw_msg, emoji_map, pure_mode)
         
         if success:
-            print(f"{C['primary']}✓ Sent{C['reset']}")
+            print(f"\r  {progress} {C['primary']}✓ Sent to {ch['channel_id']}{C['reset']}")
             success_count += 1
             ch['last_sent'] = datetime.now().strftime('%H:%M:%S')
         else:
-            print(f"{C['error']}✗ Failed: {error}{C['reset']}")
+            print(f"\r  {progress} {C['error']}✗ Failed to {ch['channel_id']}: {error}{C['reset']}")
             fail_count += 1
         
-        time.sleep(0.5)
+        time.sleep(0.3)
     
     save_config(config)
     
@@ -543,7 +600,9 @@ def auto_send_all_channels(config):
             for ch in enabled:
                 if current_time - last_sent.get(ch['channel_id'], 0) >= ch['interval']:
                     count += 1
-                    print(f"{C['accent']}[{datetime.now().strftime('%H:%M:%S')}] Sending to {ch['channel_id']}{C['reset']}")
+                    # Animated sending indicator
+                    pulse = pulse_animation()
+                    print(f"{C['accent']}[{datetime.now().strftime('%H:%M:%S')}] {pulse} Sending to {ch['channel_id']}...{C['reset']}", end="\r")
                     
                     emoji_map = ch.get('emoji_map', {})
                     if not emoji_map and ch.get('guild_id'):
@@ -556,12 +615,12 @@ def auto_send_all_channels(config):
                     success, error = send_message(config['token'], ch['channel_id'], raw_msg, emoji_map, pure_mode)
                     
                     if success:
-                        print(f"  {C['primary']}✓ Sent{C['reset']}")
+                        print(f"{C['primary']}[{datetime.now().strftime('%H:%M:%S')}] ✓ Sent to {ch['channel_id']}{' ' * 20}{C['reset']}")
                         last_sent[ch['channel_id']] = current_time
                         ch['last_sent'] = datetime.now().strftime('%H:%M:%S')
                         save_config(config)
                     else:
-                        print(f"  {C['error']}✗ Failed: {error}{C['reset']}")
+                        print(f"{C['error']}[{datetime.now().strftime('%H:%M:%S')}] ✗ Failed to {ch['channel_id']}: {error}{' ' * 10}{C['reset']}")
                     
                     time.sleep(0.5)
             
@@ -572,38 +631,52 @@ def auto_send_all_channels(config):
 
 def refresh_emojis(config):
     print(f"\n{C['secondary']}🔄 Refreshing emoji maps...{C['reset']}")
-    for ch in config['channels']:
+    total = len(config['channels'])
+    for i, ch in enumerate(config['channels']):
+        progress = progress_bar(i + 1, total, 20)
+        print(f"  {progress} Scanning channel {ch['channel_id']}...", end="\r")
         emoji_map, guild_id = refresh_emoji_map_for_channel(config['token'], ch['channel_id'])
         ch['emoji_map'] = emoji_map
         ch['guild_id'] = guild_id
-        time.sleep(0.5)
+        time.sleep(0.3)
+    print(f"\n{C['primary']}✅ Emoji maps refreshed!{C['reset']}")
     save_config(config)
-    print(f"{C['primary']}✅ Emoji maps refreshed!{C['reset']}")
 
 def change_theme():
+    """Change theme - FIXED saving"""
     print(f"\n{C['secondary']}┌─────────────────────────────────────────────────────────────────┐")
     print(f"│  🎨 CHANGE THEME")
     print(f"├─────────────────────────────────────────────────────────────────┤{C['reset']}")
     
     themes_list = list(THEMES.keys())
+    current_theme = load_theme()
+    
     for i, theme in enumerate(themes_list):
-        current = load_theme()
-        if theme == current:
-            print(f"  {C['primary']}{i+1}. {theme} ✓{C['reset']}")
+        if theme == current_theme:
+            print(f"  {C['primary']}{i+1}. {theme} ✓ (current){C['reset']}")
         else:
             print(f"  {i+1}. {theme}")
     
-    choice = input(f"\n{C['secondary']}Choose theme (1-{len(themes_list)}): {C['reset']}").strip()
+    print(f"\n  {len(themes_list)+1}. Cancel")
+    
+    choice = input(f"\n{C['secondary']}Choose theme (1-{len(themes_list)+1}): {C['reset']}").strip()
     try:
         idx = int(choice) - 1
         if 0 <= idx < len(themes_list):
             theme_name = themes_list[idx]
-            save_theme(theme_name)
-            print(f"{C['primary']}✅ Theme changed to {theme_name}! Restart to apply.{C['reset']}")
+            if save_theme(theme_name):
+                print(f"{C['primary']}✅ Theme changed to {theme_name}! Restart to apply.{C['reset']}")
+            else:
+                print(f"{C['error']}❌ Failed to save theme!{C['reset']}")
             input(f"{C['secondary']}Press Enter to restart...{C['reset']}")
             os.execv(sys.executable, [sys.executable] + sys.argv)
+        elif idx == len(themes_list):
+            print(f"{C['warning']}Cancelled{C['reset']}")
+        else:
+            print(f"{C['error']}Invalid choice{C['reset']}")
     except:
-        print(f"{C['error']}Invalid choice{C['reset']}")
+        print(f"{C['error']}Invalid input{C['reset']}")
+    input(f"{C['secondary']}Press Enter to continue...{C['reset']}")
 
 def show_help():
     print(f"""
@@ -641,6 +714,7 @@ def setup_wizard():
     
     token = input(f"\n{C['secondary']}Enter your Discord token: {C['reset']}").strip()
     
+    loading_animation("Verifying token", 1)
     valid, user_data = test_token(token)
     if not valid:
         retry = input(f"{C['secondary']}Try again? (y/n): {C['reset']}")
@@ -662,17 +736,23 @@ def setup_wizard():
     return config
 
 def print_banner():
-    print(f"""
-{C['primary']}╔══════════════════════════════════════════════════════════════════╗
-║                                                                          ║
-║         🐊 CROCODILE SELF-BOT v{VERSION} 🐊                              ║
-║                                                                          ║
-║     ┌─────────────────────────────────────────────────────────┐         ║
-║     │  Dual Mode: Normal + Pure Emoji (for strict servers)   │         ║
-║     └─────────────────────────────────────────────────────────┘         ║
-║                                                                          ║
-╚══════════════════════════════════════════════════════════════════════════╝
-{C['reset']}""")
+    """Animated banner"""
+    banner_lines = [
+        f"{C['primary']}╔══════════════════════════════════════════════════════════════════╗",
+        f"{C['primary']}║                                                                          ║",
+        f"{C['primary']}║         🐊 CROCODILE SELF-BOT v{VERSION} 🐊                              ║",
+        f"{C['primary']}║                                                                          ║",
+        f"{C['primary']}║     ┌─────────────────────────────────────────────────────────┐         ║",
+        f"{C['primary']}║     │  Dual Mode: Normal + Pure Emoji (for strict servers)   │         ║",
+        f"{C['primary']}║     └─────────────────────────────────────────────────────────┘         ║",
+        f"{C['primary']}║                                                                          ║",
+        f"{C['primary']}╚══════════════════════════════════════════════════════════════════════════╝",
+        f"{C['reset']}"
+    ]
+    
+    for line in banner_lines:
+        print(line)
+        time.sleep(0.02)
 
 def main():
     global C
@@ -681,8 +761,9 @@ def main():
     clear_screen()
     print_banner()
     
-    # Check for updates (only if not running from EXE or manual check)
+    # Check for updates
     print(f"{C['secondary']}🔍 Checking for updates...{C['reset']}")
+    loading_animation("Contacting server", 1)
     has_update, new_version, changelog, _ = check_for_updates()
     if has_update:
         print(f"{C['warning']}⚠️ Update available: v{new_version}{C['reset']}")
@@ -699,6 +780,7 @@ def main():
     else:
         # Test token on startup
         print(f"\n{C['secondary']}🔑 Verifying token...{C['reset']}")
+        loading_animation("Authenticating", 0.8)
         valid, user_data = test_token(config['token'])
         if not valid:
             print(f"{C['error']}⚠️ Token may be expired. You may need to re-enter it.{C['reset']}")
@@ -713,6 +795,9 @@ def main():
         pure_count = sum(1 for ch in config['channels'] if ch.get('pure_emoji_mode', False))
         current_theme = load_theme()
         
+        # Animated status line
+        pulse = pulse_animation()
+        
         print(f"{C['secondary']}┌─────────────────────────────────────────────────────────────────┐")
         print(f"│  📊 STATUS DASHBOARD")
         print(f"├─────────────────────────────────────────────────────────────────┤")
@@ -721,6 +806,7 @@ def main():
         print(f"│  {C['secondary']}📝{C['reset']} Normal mode: {total_count - pure_count} channels")
         print(f"│  {C['accent']}🎨{C['reset']} Theme: {current_theme}")
         print(f"│  {C['accent']}📂{C['reset']} Config path: {CONFIG_FILE}")
+        print(f"│  {C['accent']}💓{C['reset']} Status: {pulse} Active")
         print(f"└─────────────────────────────────────────────────────────────────┘{C['reset']}")
         
         print(f"""
@@ -767,6 +853,7 @@ def main():
             input(f"{C['secondary']}Press Enter...{C['reset']}")
         elif choice == "8":
             print()
+            loading_animation("Testing token", 0.8)
             test_token(config['token'])
             input(f"{C['secondary']}Press Enter...{C['reset']}")
         elif choice == "9":
@@ -778,6 +865,7 @@ def main():
             perform_update()
         elif choice == "Q":
             print(f"\n{C['primary']}👋 Goodbye!{C['reset']}")
+            typing_animation("Thanks for using Crocodile Self-Bot!", 0.02)
             break
         else:
             print(f"{C['error']}Invalid choice{C['reset']}")
