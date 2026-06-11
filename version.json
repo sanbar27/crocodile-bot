@@ -1,5 +1,5 @@
 {
-    "version": "5.5",
-    "changelog": "Initial release with auto-update",
+    "version": "5.7",
+    "changelog": "Fixed auto-update system",
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/CrocodileSelfBot.exe"
 }
