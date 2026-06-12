@@ -1,5 +1,5 @@
 {
-    "version": "5.7",
-    "changelog": "Fixed auto-update system",
+    "version": "5.9",
+    "changelog": "Fixed pure emoji mode, added emoji ID fetching"
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/CrocodileSelfBot.exe"
 }
