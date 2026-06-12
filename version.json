@@ -1,5 +1,5 @@
 {
     "version": "5.9",
-    "changelog": "Fixed pure emoji mode, added emoji ID fetching"
+    "changelog": "Fixed pure emoji mode - now converts :emoji: to actual Discord emojis",
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/CrocodileSelfBot.exe"
 }
