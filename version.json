@@ -1,4 +1,5 @@
 {
-    "version": "5.9",
-    "changelog": "Nothing Changed - Fixed small bugs"
+    "version": "6.0",
+    "changelog": "NEW: Edit token inside app (option 8) - no need to edit config.json manually! Fixed token verification, better error handling.",
+    "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/CrocodileSelfBot.exe"
 }
