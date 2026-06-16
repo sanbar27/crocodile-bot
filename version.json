@@ -1,5 +1,5 @@
 {
-    "version": "6.3",
-    "changelog": "NEW: Multi-Profile (Slot) System! Create separate profiles for different games/servers. Each profile has its own channels and settings. Press 'P' in menu to manage profiles.",
+    "version": "6.5",
+    "changelog": "AUTO-MIGRATION: Your old config_multi.json is automatically imported to profiles! No data loss. Create separate profiles for different games/servers.",
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/main/CrocodileSelfBot.exe"
 }
