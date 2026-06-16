@@ -1,5 +1,5 @@
 {
-    "version": "6.0",
-    "changelog": "NEW: Edit token inside app (option 8) - no need to edit config.json manually! Fixed token verification, better error handling.",
-    "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/refs/heads/main/CrocodileSelfBot.exe"
+    "version": "6.3",
+    "changelog": "NEW: Multi-Profile (Slot) System! Create separate profiles for different games/servers. Each profile has its own channels and settings. Press 'P' in menu to manage profiles.",
+    "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/main/CrocodileSelfBot.exe"
 }
