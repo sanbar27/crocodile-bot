@@ -1,5 +1,5 @@
 {
-    "version": "6.5",
-    "changelog": "AUTO-MIGRATION: Your old config_multi.json is automatically imported to profiles! No data loss. Create separate profiles for different games/servers.",
+    "version": "6.6",
+    "changelog": "Fixed UI alignment. New profiles automatically inherit your token.",
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/main/CrocodileSelfBot.exe"
 }
