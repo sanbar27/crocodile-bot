@@ -1,5 +1,5 @@
 {
-    "version": "6.6",
-    "changelog": "Fixed UI alignment. New profiles automatically inherit your token.",
+    "version": "6.7",
+    "changelog": "FIXED: Token now properly copies to new profiles. Clean UI. All settings copied.",
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/main/CrocodileSelfBot.exe"
 }
