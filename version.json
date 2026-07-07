@@ -1,5 +1,5 @@
 {
-    "version": "7.0",
-    "changelog": "NEW: Edit channels directly (Option 6). NEW: Galaxy theme. NEW: Anti-Ban protection with random delays. NEW: Auto-Retry with exponential backoff.",
+    "version": "7.2",
+    "changelog": "New Theme and improved anti-ban system",
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/main/CrocodileSelfBot.exe"
 }
