@@ -1,5 +1,5 @@
 {
-    "version": "7.2",
-    "changelog": "Small fixes.",
+    "version": "7.3",
+    "changelog": "Improved extremely anti detection from discord.",
     "url": "https://raw.githubusercontent.com/sanbar27/crocodile-bot/main/CrocodileSelfBot.exe"
 }
